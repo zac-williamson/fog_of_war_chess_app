@@ -1,11 +1,11 @@
-use fog_of_war_chess::{empty_game_state, GameState, move, MoveData, UserState};
+use fog_of_war_chess::{empty_game_state, GameState, move, MoveData, MoveHashes, UserState};
 
 fn main(
     input_state: GameState,
     user_state: UserState,
     move_data: MoveData,
     player_id: Field,
-) -> pub (GameState, Field, Field) {
+) -> pub (GameState, MoveHashes) {
     move(input_state, user_state, move_data, player_id)
 }
 use std::hash::poseidon2::Poseidon2::hash as poseidon2;

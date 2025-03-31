@@ -189,19 +189,16 @@ const isValidMove = (board, fromRow, fromCol, toRow, toCol) => {
     case "Q": {
       // Queen: combination of rook and bishop.
       if (absRowDiff === absColDiff) {
-        console.log("absdiff match");
         // Diagonal move.
         let stepRow = rowDiff > 0 ? 1 : -1;
         let stepCol = colDiff > 0 ? 1 : -1;
         let r = fromRow + stepRow,
           c = fromCol + stepCol;
         while (r !== toRow && c !== toCol) {
-          console.log("r c board = ", r, c, board[r][c]);
           if (board[r][c] !== null) return false;
           r += stepRow;
           c += stepCol;
         }
-        console.log("returning true");
         return true;
       } else if (fromRow === toRow || fromCol === toCol) {
         // Horizontal or vertical move.
@@ -246,15 +243,18 @@ function App() {
       const state = await initGameState();
       setGameState({
         player1State: {
-          gameState: state.game_state,
-          userState: state.alice_state,
-          oldUserState: state.alice_state,
+          gameState: state.gameState,
+          userState: state.whiteState,
+          oldUserState: state.whiteState,
+          userStateHashes: [],
         },
         player2State: {
-          gameState: state.game_state,
-          userState: state.bob_state,
-          oldUserState: state.bob_state,
+          gameState: state.gameState,
+          userState: state.blackState,
+          oldUserState: state.blackState,
+          userStateHashes: [],
         },
+        gameStateHashes: [],
       });
     }
     initializeGameState();
@@ -271,7 +271,6 @@ function App() {
     if (whiteSelected) {
       let selected = whiteSelected;
       let board = whiteBoard;
-
       try {
         if (
           isValidMove(whiteBoard, selected.row, selected.col, row, col) &&
@@ -298,6 +297,33 @@ function App() {
           newState.player1State.userState = r.userState;
           newState.player1State.oldUserState = r.userState;
           newState.player2State.gameState = r.publicInputs[0];
+          if (newState.gameStateHashes.length > 0) {
+            if (
+              newState.gameStateHashes[newState.gameStateHashes.length - 1] !=
+              r.publicInputs[1].input_game_state
+            ) {
+              console.log("error. game state hashes do not match");
+            }
+          }
+          newState.gameStateHashes.push(r.publicInputs[1].output_game_state);
+
+          if (newState.player1State.userStateHashes.length > 0) {
+            if (
+              newState.player1State.userStateHashes[
+                newState.player1State.userStateHashes.length - 1
+              ] != r.publicInputs[1].input_user_state
+            ) {
+              console.log("error. user state hashes do not match");
+            }
+          }
+          newState.player1State.userStateHashes.push(
+            r.publicInputs[1].output_user_state
+          );
+          //   pub input_game_state: Field,
+          //   pub input_user_state: Field,
+          //   pub output_game_state: Field,
+          //   pub output_user_state: Field,
+
           const updatedBobState = await consumeMove(
             r.proof,
             r.publicInputs,
@@ -305,9 +331,7 @@ function App() {
             "1"
           );
           newState.player2State.userState = updatedBobState;
-          console.log("updatedBobState", updatedBobState);
           let pieces = updatedBobState.game_state;
-          console.log("game_state? ", pieces);
           const pieceMap = [
             [null, "wP", null, "wN", "wB", "wR", "wQ", "wK"],
             [null, null, "bP", "bN", "bB", "bR", "bQ", "bK"],
@@ -373,6 +397,28 @@ function App() {
           newState.player1State.gameState = r.publicInputs[0];
           newState.player2State.userState = r.userState;
           newState.player2State.oldUserState = r.userState;
+          if (newState.gameStateHashes.length > 0) {
+            if (
+              newState.gameStateHashes[newState.gameStateHashes.length - 1] !=
+              r.publicInputs[1].input_game_state
+            ) {
+              console.log("error. game state hashes do not match");
+            }
+          }
+          newState.gameStateHashes.push(r.publicInputs[1].output_game_state);
+
+          if (newState.player2State.userStateHashes.length > 0) {
+            if (
+              newState.player2State.userStateHashes[
+                newState.player2State.userStateHashes.length - 1
+              ] != r.publicInputs[1].input_user_state
+            ) {
+              console.log("error. user state hashes do not match");
+            }
+          }
+          newState.player2State.userStateHashes.push(
+            r.publicInputs[1].output_user_state
+          );
           setGameState(newState);
           const updatedAliceState = await consumeMove(
             r.proof,

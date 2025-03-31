@@ -37,9 +37,9 @@ export async function move(row1, col1, row2, col2, gameState, playerId) {
     user_state: gameState.oldUserState,
     move_data: {
       x1: x1.toString(),
-      y1: toString(),
+      y1: y1.toString(),
       x2: x2.toString(),
-      y2: toString(),
+      y2: y2.toString(),
     },
     player_id: playerId,
   };
@@ -64,9 +64,9 @@ export async function move(row1, col1, row2, col2, gameState, playerId) {
     gameState.userState,
     {
       x1: x1.toString(),
-      y1: (7 - y1).toString(),
+      y1: y1.toString(),
       x2: x2.toString(),
-      y2: (7 - y2).toString(),
+      y2: y2.toString(),
     },
     playerId
   );
@@ -76,8 +76,6 @@ export async function move(row1, col1, row2, col2, gameState, playerId) {
 
 export async function consumeMove(proof, publicInputs, userState, playerId) {
   // TODO verify proof
-  // TODO in the public inputs we have a hash of the game state and user state used in the proof
-  //      We should check that these matches across repeated moves (i.e. output game state hash of move `i` = input game state hash of move `i+1`)
   return await consume_opponent_move_and_update_game_state(
     publicInputs[0],
     userState,
